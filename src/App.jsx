@@ -11,6 +11,7 @@ import {
 import React, { useState } from "react";
 
 import "./styles.css";
+import "./index.css";
 
 export const Basics = () => {
   const [calling, setCalling] = useState(false);
@@ -34,8 +35,13 @@ export const Basics = () => {
 
   return (
     <>
-      <div className="room">
-        <h2 style={{ textAlign: "center" }}>Video Chat Application</h2>
+      <div className="room green h-screen">
+        <h2
+          className="text-3xl font-semibold mb-5 text-neutral-300"
+          style={{ textAlign: "center" }}
+        >
+          Video Chat Application
+        </h2>
         {isConnected ? (
           <div className="user-list">
             <div className="user">
@@ -62,7 +68,6 @@ export const Basics = () => {
           </div>
         ) : (
           <div className="join-room">
-            <img alt="siddiqe's video chat" className="logo" />
             <input
               onChange={(e) => setAppId(e.target.value)}
               placeholder="<Your app ID>"
