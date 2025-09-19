@@ -1,57 +1,116 @@
 import {
-  LocalUser, // Plays the microphone audio track and the camera video track
-  RemoteUser, // Plays the remote user audio and video tracks
-  useIsConnected, // Returns whether the SDK is connected to Agora's server
-  useJoin, // Automatically join and leave a channel on mount and unmount
-  useLocalMicrophoneTrack, // Create a local microphone audio track
-  useLocalCameraTrack, // Create a local camera video track
-  usePublish, // Publish the local tracks
-  useRemoteUsers, // Retrieve the list of remote users
+  LocalUser,
+  RemoteUser,
+  useIsConnected,
+  useJoin,
+  useLocalMicrophoneTrack,
+  useLocalCameraTrack,
+  usePublish,
+  useRemoteUsers,
 } from "agora-rtc-react";
-import { useState } from "react";
+import React, { useState } from "react";
 
-// ta join a channel
-const [appId, setAppId] = useState("");
-const [channel, setChannel] = useState("");
-const [token, setToken] = useState("");
-const [calling, setCalling] = useState(false);
-const isConnected = useIsConnected();
+import "./styles.css";
 
-//to join app
-useJoin(
-  { appid: appId, channel: channel, token: token ? token : null },
-  calling
-);
+export const Basics = () => {
+  const [calling, setCalling] = useState(false);
+  const isConnected = useIsConnected();
+  const [appId, setAppId] = useState("");
+  const [channel, setChannel] = useState("");
+  const [token, setToken] = useState("");
 
-// for local  audio n video tracks
-const { localMicrophoneTrack } = useLocalMicrophoneTrack(micOn);
-const { localCameraTrack } = useLocalCameraTrack(cameraOn);
+  useJoin(
+    { appid: appId, channel: channel, token: token ? token : null },
+    calling
+  );
+  //local user
+  const [micOn, setMic] = useState(true);
+  const [cameraOn, setCamera] = useState(true);
+  const { localMicrophoneTrack } = useLocalMicrophoneTrack(micOn);
+  const { localCameraTrack } = useLocalCameraTrack(cameraOn);
+  usePublish([localMicrophoneTrack, localCameraTrack]);
+  //remote users
+  const remoteUsers = useRemoteUsers();
 
-// publish the local audio n video in channel
-const [micOn, setMic] = useState(true);
-const [cameraOn, setCamera] = useState(true);
-
-usePublish([localMicrophoneTrack, localCameraTrack]);
-
-const remoteUsers = useRemoteUsers();
-
-const Basics = () => {
   return (
     <>
-      <LocalUser
-        audioTrack={localMicrophoneTrack}
-        cameraOn={cameraOn}
-        micOn={micOn}
-        videoTrack={localCameraTrack}
-        style={{ width: "50%", height: 300 }}
-      />
-      {remoteUsers.map((user) => (
-        <div key={user.uid}>
-          <RemoteUser user={user} style={{ width: "50%", height: 300 }}>
-            <samp>{user.uid}</samp>
-          </RemoteUser>
+      <div className="room">
+        <h2 style={{ textAlign: "center" }}>Video Chat Application</h2>
+        {isConnected ? (
+          <div className="user-list">
+            <div className="user">
+              <LocalUser
+                audioTrack={localMicrophoneTrack}
+                cameraOn={cameraOn}
+                micOn={micOn}
+                videoTrack={localCameraTrack}
+                cover="https://www.agora.io/en/wp-content/uploads/2022/10/3d-spatial-audio-icon.svg"
+              >
+                <samp className="user-name">You</samp>
+              </LocalUser>
+            </div>
+            {remoteUsers.map((user) => (
+              <div className="user" key={user.uid}>
+                <RemoteUser
+                  cover="https://www.agora.io/en/wp-content/uploads/2022/10/3d-spatial-audio-icon.svg"
+                  user={user}
+                >
+                  <samp className="user-name">{user.uid}</samp>
+                </RemoteUser>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="join-room">
+            <img alt="siddiqe's video chat" className="logo" />
+            <input
+              onChange={(e) => setAppId(e.target.value)}
+              placeholder="<Your app ID>"
+              value={appId}
+            />
+            <input
+              onChange={(e) => setChannel(e.target.value)}
+              placeholder="<Your channel Name>"
+              value={channel}
+            />
+            <input
+              onChange={(e) => setToken(e.target.value)}
+              placeholder="<Your token>"
+              value={token}
+            />
+
+            <button
+              className={`join-channel ${!appId || !channel ? "disabled" : ""}`}
+              disabled={!appId || !channel}
+              onClick={() => setCalling(true)}
+            >
+              <span>Join Channel</span>
+            </button>
+          </div>
+        )}
+      </div>
+      {isConnected && (
+        <div className="control">
+          <div className="left-control">
+            <button className="btn" onClick={() => setMic((a) => !a)}>
+              <i className={`i-microphone ${!micOn ? "off" : ""}`} />
+            </button>
+            <button className="btn" onClick={() => setCamera((a) => !a)}>
+              <i className={`i-camera ${!cameraOn ? "off" : ""}`} />
+            </button>
+          </div>
+          <button
+            className={`btn btn-phone ${calling ? "btn-phone-active" : ""}`}
+            onClick={() => setCalling((a) => !a)}
+          >
+            {calling ? (
+              <i className="i-phone-hangup" />
+            ) : (
+              <i className="i-mdi-phone" />
+            )}
+          </button>
         </div>
-      ))}
+      )}
     </>
   );
 };
